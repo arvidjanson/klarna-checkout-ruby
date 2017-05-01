@@ -103,7 +103,7 @@ module Klarna
         path  = "/checkout/orders"
         path += "/#{order.id}" if order.id
 
-        request_body = order.to_json
+        request_body = order.update_params.to_json
         response = https_connection.post do |req|
           req.url path
 
