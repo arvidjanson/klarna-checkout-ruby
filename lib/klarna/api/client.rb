@@ -47,8 +47,17 @@ module Klarna
           flags: Klarna::Api::Flags::RSRV_SEND_BY_EMAIL
         }
 
-        data = params_list(rno, defaults.merge(optional_info))
-        xmlrpc_client.call('activate', KLARNA_API_VERSION, VERSION, *data)
+        params = Klarna::Api::Methods::Activate.params(self, rno, defaults.merge(optional_info))
+        xmlrpc_client.call('activate', KLARNA_API_VERSION, VERSION, *params)
+      end
+
+      def cancel(rno)
+        unless rno.present?
+          raise 'Reservation must be present!'
+        end
+
+        params = Klarna::Api::Methods::Cancel.params(self, rno)
+        xmlrpc_client.call('cancel_reservation', KLARNA_API_VERSION, VERSION, *params)
       end
 
 
@@ -65,48 +74,6 @@ module Klarna
         )
         @xmlrpc_client.http_header_extra = headers
         @xmlrpc_client
-      end
-
-      def params_list(rno, optional_info)
-        [
-          merchant_id,
-          digest(rno, optional_info),
-          rno,
-          optional_info
-        ]
-      end
-
-      def digest(rno, optional_info)
-        optional_keys = [
-          :bclass,
-          :cust_no,
-          :flags,
-          :ocr,
-          :orderid1,
-          :orderid2,
-          :reference,
-          :reference_code
-        ]
-
-        digest_optional_info = optional_info.values_at(*optional_keys).compact
-
-        if optional_info[:artnos]
-          optional_info[:artnos].each do |article|
-            digest_optional_info.push article[:artno]
-            digest_optional_info.push article[:qty]
-          end
-        end
-
-        array = [
-          KLARNA_API_VERSION.gsub('.', ':'),
-          VERSION,
-          merchant_id,
-          rno,
-          *digest_optional_info,
-          shared_secret
-        ]
-
-        ::Digest::SHA512.base64digest(array.join(':'))
       end
 
       def host
