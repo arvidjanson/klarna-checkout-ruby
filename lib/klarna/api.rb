@@ -1,4 +1,3 @@
-require "klarna/api/activate"
 require "klarna/api/client"
 require "klarna/api/configuration"
 require "klarna/api/flags"
