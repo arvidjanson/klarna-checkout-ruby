@@ -60,6 +60,24 @@ module Klarna
         xmlrpc_client.call('cancel_reservation', KLARNA_API_VERSION, VERSION, *params)
       end
 
+      def return_amount(ino, amount, vat)
+        unless ino.present?
+          raise 'Invoice number must be present!'
+        end
+
+        params = Klarna::Api::Methods::ReturnAmount.params(self, ino, amount, vat)
+        xmlrpc_client.call('return_amount', KLARNA_API_VERSION, VERSION, *params)
+      end
+
+      def credit_invoice(ino)
+        unless ino.present?
+          raise 'Invoice number must be present!'
+        end
+
+        params = Klarna::Api::Methods::CreditInvoice.params(self, ino)
+        xmlrpc_client.call('credit_invoice', KLARNA_API_VERSION, VERSION, *params)
+      end
+
 
       private
 
